@@ -1,5 +1,6 @@
 #include "Matrix.h"
 #include "MathHelpers.h"
+#include <cstdint>
 #include <cmath>
 #include <limits>
 #include <cassert>
