@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Math.h"
+#include "MathUtils/Math.h"
 #include "DataTypes.h"
 #include "Camera.h"
 

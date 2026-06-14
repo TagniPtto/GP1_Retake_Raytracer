@@ -1,6 +1,6 @@
 #pragma once
 #include <fstream>
-#include "Math.h"
+#include "MathUtils/Math.h"
 #include "DataTypes.h"
 
 namespace dae
@@ -15,7 +15,7 @@ namespace dae
 
 			const float c = Vector3::Dot(SphereToRay, SphereToRay) - Square(sphere.radius);
 			const float b = Vector3::Dot(SphereToRay, ray.direction) * 2.0f;
-			const float a	= Vector3::Dot(ray.direction, ray.direction);
+			const float a = Vector3::Dot(ray.direction, ray.direction);
 			
 			const float D = Square(b) - 4 * a * c;
 			
@@ -23,18 +23,23 @@ namespace dae
 			{
 				return false;
 			}
+
 			const float t1 = (-b + sqrtf(D)) / (2 * a);
 			const float t2 = (-b - sqrtf(D)) / (2 * a);
-			
-			if (!ignoreHitRecord) {
-				hitRecord.t = std::min(t1, t2);
-				hitRecord.origin = hitRecord.t * ray.direction + ray.origin;
-				hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
-				hitRecord.materialIndex = sphere.materialIndex;
-				hitRecord.didHit = true;
+			if (float t = std::min(t1, t2); t > 0)
+			{
+				if (!ignoreHitRecord)
+				{
+					hitRecord.t = t;
+					hitRecord.origin = hitRecord.t * ray.direction + ray.origin;
+					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+					hitRecord.materialIndex = sphere.materialIndex;
+					hitRecord.didHit = true;
+				}
+				return true;
 			}
-		
-			return true;
+
+			return false;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -49,19 +54,25 @@ namespace dae
 		{
 
 			float denominator = Vector3::Dot(plane.normal, ray.direction);
-			if (denominator < .001f) {
+			if (std::abs(denominator) < .001f) {
 				return false;
 			}
-
-			if (!ignoreHitRecord) {
-				float numerator = Vector3::Dot(plane.origin - ray.origin , plane.normal); 
-				hitRecord.t = numerator/denominator;
-				hitRecord.materialIndex = plane.materialIndex;
-				hitRecord.normal = plane.normal;
-				hitRecord.didHit = true;
-				hitRecord.origin = ray.origin + ray.direction * hitRecord.t;
+			float numerator = Vector3::Dot(plane.origin - ray.origin, plane.normal);
+			float t = numerator / denominator;
+			if (t > 0)
+			{
+				if (!ignoreHitRecord)
+				{
+					hitRecord.didHit = true;
+					hitRecord.materialIndex = plane.materialIndex;
+					hitRecord.normal = plane.normal;
+					hitRecord.t = t;
+					hitRecord.origin = ray.origin + ray.direction * hitRecord.t;
+				}
+				return true;
 			}
-			return true;
+
+			return false;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)

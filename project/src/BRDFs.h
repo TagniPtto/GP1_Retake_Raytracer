@@ -1,5 +1,5 @@
 #pragma once
-#include "Math.h"
+#include "MathUtils/Math.h"
 
 namespace dae
 {

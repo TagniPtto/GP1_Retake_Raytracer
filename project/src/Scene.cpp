@@ -28,8 +28,20 @@ namespace dae {
 
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
-		//todo W1
-		throw std::runtime_error("Not Implemented Yet");
+		
+		HitRecord temp;
+		for (auto& sphere : m_SphereGeometries) {
+			GeometryUtils::HitTest_Sphere(sphere, ray, temp);
+			if (temp.t < closestHit.t) {
+				closestHit = temp;
+			}
+		}
+		for (auto& plane : m_PlaneGeometries) {
+			GeometryUtils::HitTest_Plane(plane, ray, temp);
+			if (temp.t < closestHit.t) {
+				closestHit = temp;
+			}
+		}
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const

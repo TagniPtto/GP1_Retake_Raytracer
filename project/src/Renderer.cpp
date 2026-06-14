@@ -4,8 +4,8 @@
 
 //Project includes
 #include "Renderer.h"
-#include "Math.h"
-#include "Matrix.h"
+#include "MathUtils/Math.h"
+#include "MathUtils/Matrix.h"
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
@@ -41,13 +41,12 @@ void Renderer::Render(Scene* pScene) const
 			rayDirection.Normalize();
 			Ray ray{.origin = camera.origin , .direction = rayDirection};
 
-			Sphere testSphere{.origin = {0.f,0.f ,100.f}, .radius = 50.0f , .materialIndex = 0};
-
 			ColorRGB finalColor{ rayDirection.x,rayDirection.y,rayDirection.z };
 			HitRecord hit;
-			if (GeometryUtils::HitTest_Sphere(testSphere,ray, hit)) {
-				float v{hit.t/100.f};
-				finalColor = ColorRGB{ v, v, v};
+			pScene->GetClosestHit(ray, hit);
+			if (hit.didHit) 
+			{
+				finalColor = materials[hit.materialIndex]->Shade();
 			}
 
 

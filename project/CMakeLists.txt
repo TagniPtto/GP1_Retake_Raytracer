@@ -2,13 +2,13 @@
 set(SOURCES 
     "src/main.cpp"
     "src/LeakDetector.cpp"
-    "src/Matrix.cpp"
     "src/Renderer.cpp"
     "src/Scene.cpp"
     "src/Timer.cpp"
-    "src/Vector2.cpp"
-    "src/Vector3.cpp"
-    "src/Vector4.cpp"
+    "src/MathUtils/Matrix.cpp"
+    "src/MathUtils/Vector2.cpp"
+    "src/MathUtils/Vector3.cpp"
+    "src/MathUtils/Vector4.cpp"
  "src/InputSystem/InputManager.cpp")
 
 # Create the executable

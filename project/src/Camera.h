@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL_keyboard.h>
 #include <SDL_mouse.h>
-#include "Math.h"
+#include "MathUtils/Math.h"
 #include "Timer.h"
 
 namespace dae
