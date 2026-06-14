@@ -46,7 +46,8 @@ void Renderer::Render(Scene* pScene) const
 			ColorRGB finalColor{ rayDirection.x,rayDirection.y,rayDirection.z };
 			HitRecord hit;
 			if (GeometryUtils::HitTest_Sphere(testSphere,ray, hit)) {
-				finalColor = materials[hit.materialIndex]->Shade();
+				float v{hit.t/100.f};
+				finalColor = ColorRGB{ v, v, v};
 			}
 
 

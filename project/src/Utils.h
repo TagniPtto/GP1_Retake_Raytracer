@@ -47,9 +47,21 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			throw std::runtime_error("Not Implemented Yet");
-			return false;
+
+			float denominator = Vector3::Dot(plane.normal, ray.direction);
+			if (denominator < .001f) {
+				return false;
+			}
+
+			if (!ignoreHitRecord) {
+				float numerator = Vector3::Dot(plane.origin - ray.origin , plane.normal); 
+				hitRecord.t = numerator/denominator;
+				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.normal = plane.normal;
+				hitRecord.didHit = true;
+				hitRecord.origin = ray.origin + ray.direction * hitRecord.t;
+			}
+			return true;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
@@ -62,8 +74,43 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			throw std::runtime_error("Not Implemented Yet");
+
+			const float result = Vector3::Dot(ray.direction, triangle.normal);
+			if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+			{
+				if (result < 0) return false;
+			}
+			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+			{
+				if (result > 0) return false;
+			}
+
+			Plane trianglePlane{
+				.origin = triangle.v0,
+				.normal = triangle.normal,
+				.materialIndex = triangle.materialIndex
+			};
+
+			if (HitTest_Plane(trianglePlane, ray, hitRecord, ignoreHitRecord)) {
+
+				Vector3  v0TOHit = hitRecord.origin - triangle.v0;
+				Vector3  v1TOHit = hitRecord.origin - triangle.v1;
+				Vector3  v2TOHit = hitRecord.origin - triangle.v2;
+
+				Vector3 side01Normal = Vector3::Cross(triangle.v1 - triangle.v0, triangle.normal);
+				Vector3 side12Normal = Vector3::Cross(triangle.v2 - triangle.v1, triangle.normal);
+				Vector3 side20Normal = Vector3::Cross(triangle.v0 - triangle.v2, triangle.normal);
+
+				if (Vector3::Dot(side01Normal , v0TOHit) > 0 &&
+					Vector3::Dot(side12Normal , v1TOHit) > 0 &&
+					Vector3::Dot(side20Normal , v2TOHit) > 0 )
+				{
+					return true;
+				}
+				else {
+					hitRecord.didHit = false;
+				}
+			}
 			return false;
 		}
 
