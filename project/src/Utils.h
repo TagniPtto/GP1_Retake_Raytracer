@@ -23,10 +23,12 @@ namespace dae
 			{
 				return false;
 			}
+			float t = (-b - sqrtf(D)) / (2 * a);
+			if (t < ray.min) {
+				t = (-b - sqrtf(D)) / (2 * a);
+			}
 
-			const float t1 = (-b + sqrtf(D)) / (2 * a);
-			const float t2 = (-b - sqrtf(D)) / (2 * a);
-			if (float t = std::min(t1, t2); t > 0)
+			if (ray.min  < t && t < ray.max)
 			{
 				if (!ignoreHitRecord)
 				{

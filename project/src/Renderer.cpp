@@ -9,6 +9,19 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <random>
+
+inline float random_float()
+{
+	static std::mt19937 gen(std::random_device{}());
+	static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+	return dist(gen);
+}
+inline float random_float(float min, float max)
+{
+	return min + (max - min) * random_float();
+}
+
 
 using namespace dae;
 
@@ -23,35 +36,31 @@ Renderer::Renderer(SDL_Window * pWindow) :
 
 void Renderer::Render(Scene* pScene) const
 {
-	Camera& camera = pScene->GetCamera();
-	auto& materials = pScene->GetMaterials();
-	auto& lights = pScene->GetLights();
-
-
+	auto camera =  pScene->GetCamera();
 	const float aspectRatio{ static_cast<float>(m_Width) / m_Height};
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-
+			ColorRGB finalColor{};
+			Vector2 normalizedDeciceCoordinate{ 2 * (px + 0.5f) / m_Width - 1.0f, 1 - 2 * (py + 0.5f) / m_Height };
 			
-			Vector2 normalizedDeciceCoordinate{ 2 * (px + 0.5f)/m_Width - 1.0f, 1 - 2 * (py + 0.5f) / m_Height};
-			normalizedDeciceCoordinate.x *= aspectRatio;
-			Vector3 rayDirection{ normalizedDeciceCoordinate .x, normalizedDeciceCoordinate.y , 1.0f};
-			rayDirection.Normalize();
-			Ray ray{.origin = camera.origin , .direction = rayDirection};
+			
 
-			ColorRGB finalColor{ rayDirection.x,rayDirection.y,rayDirection.z };
-			HitRecord hit;
-			pScene->GetClosestHit(ray, hit);
-			if (hit.didHit) 
-			{
-				finalColor = materials[hit.materialIndex]->Shade();
+			for (int i{}; i < camera.samplesPerPixel; ++i) {
+				
+				auto sampleCoord = normalizedDeciceCoordinate + Vector2{ random_float(-0.5f,0.5f) / m_Width,random_float(-0.5f,0.5f) / m_Height};
+				sampleCoord.x *= aspectRatio;
+				sampleCoord.x *= std::tanf(camera.fovAngle / 2.0f);
+				sampleCoord.y *= std::tanf(camera.fovAngle / 2.0f);
+
+				Vector3 rayDirection{ sampleCoord.x, sampleCoord.y , 1.0f };
+				rayDirection.Normalize();
+				const Ray ray{ .origin = camera.origin , .direction = rayDirection };
+				finalColor += ShadePixel(pScene, ray);
 			}
-
-
+			finalColor /= camera.samplesPerPixel;
 			finalColor.MaxToOne();
-
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),
 				static_cast<uint8_t>(finalColor.g * 255),
@@ -63,6 +72,29 @@ void Renderer::Render(Scene* pScene) const
 	//Update SDL Surface
 	SDL_UpdateWindowSurface(m_pWindow);
 }
+ColorRGB dae::Renderer::ShadePixel(Scene* pScene, Ray ray) const
+{
+	Camera& camera = pScene->GetCamera();
+	auto& materials = pScene->GetMaterials();
+	auto& lights = pScene->GetLights();
+
+
+
+	ColorRGB outColor{ };
+	HitRecord hit;
+	pScene->GetClosestHit(ray, hit);
+	if (hit.didHit)
+	{
+		outColor = 0.5f * ColorRGB(hit.normal.x + 1.0f, hit.normal.y + 1.0f, hit.normal.z + 1.0f);//materials[hit.materialIndex]->Shade();
+	}
+	else {
+		float a = 0.5f * (ray.direction.y + 1.0f);
+		outColor = (1.0f - a) * ColorRGB(1.0f,1.0f,1.0f) + a * ColorRGB(0.5f, 0.7f, 1.0f);
+	}
+	return outColor;
+}
+
+
 
 bool Renderer::SaveBufferToImage() const
 {

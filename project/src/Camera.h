@@ -26,6 +26,8 @@ namespace dae
 
 		Matrix cameraToWorld{};
 
+		int samplesPerPixel{1};
+
 		Matrix CalculateCameraToWorld()
 		{
 			//todo: W2
