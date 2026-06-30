@@ -45,7 +45,6 @@ void Renderer::Render(Scene* pScene) const
 			ColorRGB finalColor{};
 			Vector2 normalizedDeciceCoordinate{ 2 * (px + 0.5f) / m_Width - 1.0f, 1 - 2 * (py + 0.5f) / m_Height };
 			
-			
 
 			for (int i{}; i < camera.samplesPerPixel; ++i) {
 				
@@ -59,7 +58,7 @@ void Renderer::Render(Scene* pScene) const
 				const Ray ray{ .origin = camera.origin , .direction = rayDirection };
 				finalColor += ShadePixel(pScene, ray);
 			}
-			finalColor /= camera.samplesPerPixel;
+			finalColor /= float(camera.samplesPerPixel);
 			finalColor.MaxToOne();
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),

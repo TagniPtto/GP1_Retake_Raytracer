@@ -9,7 +9,12 @@ set(SOURCES
     "src/MathUtils/Vector2.cpp"
     "src/MathUtils/Vector3.cpp"
     "src/MathUtils/Vector4.cpp"
- "src/InputSystem/InputManager.cpp")
+    "src/InputSystem/InputManager.cpp"
+    "src/InputSystem/Mouse/Mouse.cpp"
+    "src/InputSystem/Keyboard/Keyboard.cpp"
+    "src/InputSystem/Gamepad/Gamepad.cpp"
+    "src/InputSystem/Gamepad/SDLControllerImpl.cpp"
+ "src/Camera.cpp")
 
 # Create the executable
 add_executable(${PROJECT_NAME} ${SOURCES})

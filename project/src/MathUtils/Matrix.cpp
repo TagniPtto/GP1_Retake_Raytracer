@@ -187,10 +187,11 @@ namespace dae {
 		return out;
 	}
 
-	Matrix Matrix::CreateLookAtLH(const Vector3& origin, const Vector3& forward, const Vector3& up)
+	Matrix Matrix::CreateLookAtLH(const Vector3& origin, const Vector3& forward, const Vector3& worldUp)
 	{
-		//TODO
-		return {};
+		const Vector3 right = Vector3::Cross(worldUp,forward).Normalized();
+		const Vector3 up = Vector3::Cross(forward,right).Normalized();
+		return Matrix(right,up,forward,origin);
 	}
 
 	Matrix Matrix::CreatePerspectiveFovLH(float fov, float aspect, float zn, float zf)

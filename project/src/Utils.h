@@ -104,11 +104,21 @@ namespace dae
 				.materialIndex = triangle.materialIndex
 			};
 
-			if (HitTest_Plane(trianglePlane, ray, hitRecord, ignoreHitRecord)) {
+			if (HitTest_Plane(trianglePlane, ray, hitRecord, ignoreHitRecord))
+			{
+				float area = Vector3::Cross(triangle.v1 - triangle.v0, triangle.v2 - triangle.v0).SqrMagnitude();
 
 				Vector3  v0TOHit = hitRecord.origin - triangle.v0;
 				Vector3  v1TOHit = hitRecord.origin - triangle.v1;
 				Vector3  v2TOHit = hitRecord.origin - triangle.v2;
+
+				float w0 = Vector3::Cross(v1TOHit , v2TOHit).SqrMagnitude()/area;
+				if (w0 < 0) return false;
+				float w1 = Vector3::Cross(v0TOHit , v2TOHit).SqrMagnitude()/area;
+				if (w1 < 0) return false;
+				float w2 = Vector3::Cross(v1TOHit , v0TOHit).SqrMagnitude()/area;
+				if (w2 < 0) return false;
+
 
 				Vector3 side01Normal = Vector3::Cross(triangle.v1 - triangle.v0, triangle.normal);
 				Vector3 side12Normal = Vector3::Cross(triangle.v2 - triangle.v1, triangle.normal);
@@ -154,9 +164,7 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//todo W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			return (light.origin - origin).Normalized();
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)

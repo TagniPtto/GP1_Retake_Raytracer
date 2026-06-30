@@ -4,16 +4,12 @@
 #include "MathUtils/Math.h"
 #include "Timer.h"
 
+
 namespace dae
 {
-	struct Camera final
+	class Camera final
 	{
-		Camera() = default;
-		Camera(const Vector3& _origin, float _fovAngle) :
-			origin{ _origin },
-			fovAngle{ _fovAngle }
-		{}
-
+		
 		Vector3 origin{};
 		float fovAngle{ 90.f };
 
@@ -27,28 +23,9 @@ namespace dae
 		Matrix cameraToWorld{};
 
 		int samplesPerPixel{1};
-
-		Matrix CalculateCameraToWorld()
-		{
-			//todo: W2
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
-		}
-
-		void Update(Timer* pTimer)
-		{
-			const float deltaTime = pTimer->GetElapsed();
-
-			//Keyboard Input
-			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
-
-
-			//Mouse Input
-			int mouseX{}, mouseY{};
-			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
-
-			//todo: W2
-			//throw std::runtime_error("Not Implemented Yet");
-		}
+	public:
+		Camera(const Vector3& _origin = Vector3{}, float _fovAngle = 45.0f);
+		Matrix CalculateCameraToWorld();
+		void Update(Timer* pTimer);
 	};
 }

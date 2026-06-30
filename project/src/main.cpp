@@ -9,6 +9,7 @@
 //Project includes
 #include "Timer.h"
 #include "Renderer.h"
+#include "InputSystem/InputManager.h"
 #include "Scene.h"
 #if defined(_DEBUG)
 #include "LeakDetector.h"
@@ -51,8 +52,9 @@ int main(int argc, char* args[])
 	//Initialize "framework"
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
+	const auto pInputHandler = new InputManager();
 
-	const auto pScene = new Scene_W1();
+	const auto pScene = new Scene_W2();
 	pScene->Initialize();
 
 	//Start loop
@@ -81,6 +83,9 @@ int main(int argc, char* args[])
 				break;
 			}
 		}
+
+		//--------- Input ---------
+		pInputHandler->ProcessInput();
 
 		//--------- Update ---------
 		pScene->Update(pTimer);
