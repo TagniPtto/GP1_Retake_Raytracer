@@ -3,6 +3,7 @@
 #include "InputSystem/IInputCommand.h"
 #include "InputSystem/InputManager.h"
 
+#include "Timer.h"
 #include <iostream>
 
 
@@ -16,9 +17,14 @@ namespace dae {
 		{
 			auto direction = std::get<Vector2> (context.value);
 			direction.Normalize();
-			cam->origin += cam->forward * direction.y + cam->right*direction.x;
+			const auto deltaTime = Timer::Get().GetElapsed();
+			cam->origin += (
+				cam->cameraToWorld.TransformVector(cam->forward) * -direction.y +
+				cam->cameraToWorld.TransformVector(cam->right) *direction.x) * cam->movementSensitivity * deltaTime;
 
-			std::cout << "Moving" << std::endl;
+			
+
+			std::cout << "position : [" << cam->origin.x << "," << cam->origin.y << "," << cam->origin.z << "]" << std::endl;
 
 		}
 
@@ -32,9 +38,10 @@ namespace dae {
 		{
 			auto direction = std::get<Vector2>(context.value);
 			direction.Normalize();
-			cam->totalPitch += direction.x *0.01f;
-			cam->totalYaw += direction.y * 0.01f;
-			std::cout << "rotating" << std::endl;
+			const auto deltaTime = Timer::Get().GetElapsed();
+			cam->totalPitch += -direction.y * cam->rotationSensitivity * deltaTime ;
+			cam->totalYaw += direction.x * cam->rotationSensitivity * deltaTime;
+			std::cout << "rotation : ["<< cam->totalPitch <<"," << cam->totalYaw <<","<< 0 << "]" << std::endl;
 		}
 
 	};
@@ -52,7 +59,7 @@ void dae::Camera::Update(Timer* pTimer)
 	//Mouse Input
 	int mouseX{}, mouseY{};
 	const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
-
+	cameraToWorld = CalculateCameraToWorld();
 }
 
 dae::Camera::Camera(const Vector3 & _origin, float _fovAngle):
@@ -80,7 +87,10 @@ dae::Camera::Camera(const Vector3 & _origin, float _fovAngle):
 
 dae::Matrix dae::Camera::CalculateCameraToWorld()
 {
-	Matrix LookAtMatrix = Matrix::CreateLookAtLH(origin, forward, up);
-	return LookAtMatrix;
+	const auto LookAtMatrix = Matrix::CreateLookAtLH(origin, forward, up);
+	const auto rotation = Matrix::CreateRotation(totalPitch, totalYaw, 0);
+
+
+	return rotation * LookAtMatrix;
 }
 

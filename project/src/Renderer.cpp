@@ -55,6 +55,7 @@ void Renderer::Render(Scene* pScene) const
 
 				Vector3 rayDirection{ sampleCoord.x, sampleCoord.y , 1.0f };
 				rayDirection.Normalize();
+				rayDirection = camera.cameraToWorld.TransformVector(rayDirection);
 				const Ray ray{ .origin = camera.origin , .direction = rayDirection };
 				finalColor += ShadePixel(pScene, ray);
 			}
