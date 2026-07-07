@@ -6,8 +6,15 @@ namespace dae
 {
 	class Timer final
 	{
-	public:
+	private:
 		Timer();
+	public:
+		static Timer& Get() {
+			static Timer instance;
+			return instance;
+		}
+
+
 		~Timer() = default;
 
 		Timer(const Timer&) = delete;

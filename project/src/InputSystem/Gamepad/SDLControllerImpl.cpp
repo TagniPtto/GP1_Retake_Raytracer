@@ -38,13 +38,22 @@ void dae::SDLControllerImpl::ProcessInput()
 	
 	
 	leftThumbX	= SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_LEFTX ) / AXIS_MAX;
+	leftThumbX = std::abs(leftThumbX) > 0.01 ? leftThumbX : 0;
+
 	leftThumbY	= SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_LEFTY) / AXIS_MAX;
+	leftThumbY = std::abs(leftThumbY) > 0.01 ? leftThumbY : 0;
 	
 	rightThumbX	= SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_RIGHTX) / AXIS_MAX;
+	rightThumbX = std::abs(rightThumbX) > 0.01 ? rightThumbX : 0;
+
 	rightThumbY	= SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_RIGHTY)	/ AXIS_MAX;
-	
+	rightThumbY = std::abs(rightThumbY) > 0.01 ? rightThumbY : 0;
+
 	leftTrigger	= SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT)	/ AXIS_MAX;
+	leftTrigger = std::abs(leftTrigger) > 0.01 ? leftTrigger : 0;
+
 	rightTrigger = SDL_GameControllerGetAxis(m_gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT)	/ AXIS_MAX;
+	rightTrigger = std::abs(rightTrigger) > 0.01 ? rightTrigger : 0;
 
 }
 
@@ -88,17 +97,15 @@ dae::SDLControllerImpl::SDLControllerImpl(unsigned int id):
 {
 	if (SDL_IsGameController(id))
 	{
-		
 		m_gamepad = SDL_GameControllerOpen(id);
-
-		if (m_gamepad)
-		{
-			SDL_Log("Opened Gamepad: %s", SDL_GameControllerName(m_gamepad));
-		}
-		else
-		{
-			SDL_Log("Failed to open gamepad: %s",SDL_GetError());
-		}
+	}
+	if (m_gamepad)
+	{
+		SDL_Log("Opened Gamepad: %s", SDL_GameControllerName(m_gamepad));
+	}
+	else
+	{
+		SDL_Log("Failed to open gamepad: %s", SDL_GetError());
 	}
 }
 SDL_GameControllerButton ToSDLButton(dae::GamepadInput input)

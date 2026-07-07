@@ -7,9 +7,8 @@
 
 namespace dae
 {
-	class Camera final
+	struct Camera final
 	{
-		
 		Vector3 origin{};
 		float fovAngle{ 90.f };
 

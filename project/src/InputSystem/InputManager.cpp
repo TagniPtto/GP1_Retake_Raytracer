@@ -14,7 +14,6 @@
 #include "IInputCommand.h"
 
 
-#define MAX_CONTROLLERS 4
 
 namespace dae {
 
@@ -46,9 +45,12 @@ namespace dae {
 		m_mouse(std::unique_ptr<Mouse>(new Mouse())),
 		m_keyboard(std::unique_ptr<Keyboard>(new Keyboard))
 	{
-		for (unsigned int i = 0; i < MAX_CONTROLLERS; ++i)
+		for (unsigned int i = 0; i < SDL_NumJoysticks(); ++i)
 		{
-			m_gamepads.emplace_back(std::make_unique<dae::Gamepad>(i));
+			if (SDL_IsGameController(i))
+			{
+				m_gamepads.emplace_back(std::make_unique<dae::Gamepad>(i));
+			}
 		}
 	}
 
@@ -112,7 +114,7 @@ namespace dae {
 		case InputValueType::Vector2:
 		{
 			Vector2 value = device->GetAxis2D(binding.code);
-			if (std::abs(value.x) > 0.0f || std::abs(value.y) > 0.0f)
+			if (value.SqrMagnitude() > 0.01f)
 			{
 				command->Execute(InputContext{ .binding = binding,.value = value });
 			}
@@ -124,12 +126,21 @@ namespace dae {
 	IInputDevice* dae::InputManagerImpl::GetDevice(InputType deviceType, uint32_t deviceIndex) const
 	{
 		switch (deviceType) {
-		case InputType::Keyboard:
+		case InputType::Keyboard: 
+		{
 			return m_keyboard.get();
+		}
 		case InputType::Mouse:
+		{
 			return m_mouse.get();
+		}
 		case InputType::Gamepad:
-			return m_gamepads[deviceIndex].get();
+		{
+			if (m_gamepads.size() > 0)
+			{
+				return m_gamepads[deviceIndex].get();
+			}
+		}
 		}
 		return nullptr;
 	}
@@ -154,22 +165,27 @@ void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, Inpu
 	return m_pImpl->BindCommand(std::move(command), binding);
 }
 
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputType inputType, uint32_t deviceId, InputValueType valueType, uint32_t code, InputTriggerType triggerType)
+void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command,  InputValueType valueType, InputType inputType, uint32_t deviceId , uint32_t code, InputTriggerType triggerType)
 {
 	InputBinding binding{ .code = code, .deviceIndex = deviceId,.deviceType = inputType, .deviceValue = valueType , .trigger = triggerType };
 	return BindCommand(std::move(command), binding);
 }
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, uint32_t deviceId, InputValueType valueType, GamepadInput code, InputTriggerType triggerType)
+void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, uint32_t deviceId, GamepadInput code, InputTriggerType triggerType)
 {
-	BindCommand(std::move(command), InputType::Gamepad, deviceId, valueType, uint32_t(code), triggerType);
+	BindCommand(std::move(command),   valueType, InputType::Gamepad, deviceId, uint32_t(code), triggerType);
 }
 void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, KeyboardInput code, InputTriggerType triggerType)
 {
-	BindCommand(std::move(command), InputType::Keyboard, 0, valueType, uint32_t(code), triggerType);
+	BindCommand(std::move(command),   valueType, InputType::Keyboard, 0, uint32_t(code), triggerType);
 }
 void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, MouseInput code, InputTriggerType triggerType)
 {
-	BindCommand(std::move(command), InputType::Mouse, 0, valueType, uint32_t(code), triggerType);
+	BindCommand(std::move(command),  valueType, InputType::Mouse, 0, uint32_t(code), triggerType);
+}
+dae::InputManager& dae::InputManager::Get()
+{
+	static dae::InputManager instance;
+	return instance;
 }
 dae::InputManager::~InputManager() = default;
 

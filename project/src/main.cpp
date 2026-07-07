@@ -35,13 +35,13 @@ int main(int argc, char* args[])
 	#endif
 
 	//Create window + surfaces
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 
 	const uint32_t width = 640;
 	const uint32_t height = 480;
 
 	SDL_Window* pWindow = SDL_CreateWindow(
-		"RayTracer - **Insert Name**",
+		"RayTracer - **Tagni Geudens 2DAE19n**",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		width, height, 0);
@@ -50,15 +50,13 @@ int main(int argc, char* args[])
 		return 1;
 
 	//Initialize "framework"
-	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
-	const auto pInputHandler = new InputManager();
 
 	const auto pScene = new Scene_W2();
 	pScene->Initialize();
 
 	//Start loop
-	pTimer->Start();
+	Timer::Get().Start();
 
 	// Start Benchmark
 	// pTimer->StartBenchmark();
@@ -83,23 +81,23 @@ int main(int argc, char* args[])
 				break;
 			}
 		}
-
-		//--------- Input ---------
-		pInputHandler->ProcessInput();
+		
+		//--------- Update ---------
+		InputManager::Get().ProcessInput();
 
 		//--------- Update ---------
-		pScene->Update(pTimer);
+		pScene->Update(&Timer::Get());
 
 		//--------- Render ---------
 		pRenderer->Render(pScene);
 
 		//--------- Timer ---------
-		pTimer->Update();
-		printTimer += pTimer->GetElapsed();
+		Timer::Get().Update();
+		printTimer += Timer::Get().GetElapsed();
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			std::cout << "dFPS: " << Timer::Get().GetdFPS() << std::endl;
 		}
 
 		//Save screenshot after full render
@@ -112,12 +110,11 @@ int main(int argc, char* args[])
 			takeScreenshot = false;
 		}
 	}
-	pTimer->Stop();
+	Timer::Get().Stop();
 
 	//Shutdown "framework"
 	delete pScene;
 	delete pRenderer;
-	delete pTimer;
 
 	ShutDown(pWindow);
 	return 0;

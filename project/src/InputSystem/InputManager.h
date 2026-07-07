@@ -9,11 +9,13 @@ namespace dae
 	class InputManagerImpl;
 	class InputManager final
 	{
+	private:
+		InputManager();
 
 	public:
-		InputManager();
-		~InputManager();
+		static InputManager& Get();
 
+		~InputManager();
 		InputManager(const InputManager& other) = delete;
 		InputManager(InputManager&& other) = delete;
 		InputManager& operator=(const InputManager& other) = delete;
@@ -22,11 +24,11 @@ namespace dae
 		bool ProcessInput();
 
 		void BindCommand(std::unique_ptr<IInputCommand> command, InputBinding binding);
-		void BindCommand(std::unique_ptr<IInputCommand> command, InputType inputType, uint32_t deviceId, InputValueType valueType, uint32_t code, InputTriggerType triggerType);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, InputType inputType, uint32_t deviceId, uint32_t code, InputTriggerType triggerType);
 		
-		void BindCommand(std::unique_ptr<IInputCommand> command, uint32_t deviceId,	InputValueType valueType, GamepadInput code, InputTriggerType triggerType);
-		void BindCommand(std::unique_ptr<IInputCommand> command,						InputValueType valueType, KeyboardInput code, InputTriggerType triggerType);
-		void BindCommand(std::unique_ptr<IInputCommand> command,						InputValueType valueType, MouseInput code, InputTriggerType triggerType);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, uint32_t deviceId,GamepadInput code, InputTriggerType triggerType);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, KeyboardInput code, InputTriggerType triggerType);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, MouseInput code, InputTriggerType triggerType);
 
 	private:
 		std::unique_ptr<InputManagerImpl> m_pImpl;
