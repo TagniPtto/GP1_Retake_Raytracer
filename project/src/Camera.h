@@ -17,7 +17,7 @@ namespace dae
 		Vector3 right{ Vector3::UnitX };
 
 		float movementSensitivity{8.0f};
-		float rotationSensitivity{1.5f};
+		float rotationSensitivity{1.0f};
 
 		float totalPitch{ 0.f };
 		float totalYaw{ 0.f };

@@ -13,7 +13,7 @@
 #include "Keyboard/Keyboard.h"
 #include "IInputCommand.h"
 
-
+#include <iostream>
 
 namespace dae {
 
@@ -24,21 +24,20 @@ namespace dae {
 		std::unique_ptr<Keyboard> m_keyboard;
 		std::vector<std::unique_ptr<Gamepad>> m_gamepads;
 
-
-		std::vector< std::pair<InputBinding, std::unique_ptr<IInputCommand>>> m_bindings;
+		using InputAction = std::pair<std::vector<InputBinding>, std::unique_ptr<IInputCommand>>;
+		std::vector<InputAction> m_bindings;
+	
 	private:
 		friend class InputManager;
 		InputManagerImpl();
 	public:
 
-		void BindCommand(std::unique_ptr<IInputCommand>  command, InputBinding binding);
+		void BindCommand(std::unique_ptr<IInputCommand>  command, std::initializer_list<InputBinding> bindings);
 		bool ProcessInput();
 	private:
-		void ProcessBinding(const InputBinding& binding, IInputCommand* command);
+		bool IsBindingTriggered(const InputBinding& binding, InputContext& context);
 		IInputDevice* GetDevice(InputType deviceType, uint32_t deviceIndex) const;
 	};
-
-
 
 
 	InputManagerImpl::InputManagerImpl():
@@ -54,73 +53,90 @@ namespace dae {
 		}
 	}
 
-	void InputManagerImpl::BindCommand(std::unique_ptr<IInputCommand>  command, InputBinding binding)
+	void InputManagerImpl::BindCommand(std::unique_ptr<IInputCommand>  command, std::initializer_list<InputBinding> bindings)
 	{
-		m_bindings.emplace_back(binding, std::move(command));
+		m_bindings.emplace_back(bindings ,std::move(command));
 	}
 
 	bool InputManagerImpl::ProcessInput()
 	{
-
 		m_mouse->ProcessInput();
 		m_keyboard->ProcessInput();
 		for (auto& gamepad : m_gamepads) {
 			gamepad->ProcessInput();
 		}
 
-		for (auto& [binding, command] : m_bindings)
+		for (auto& [bindings, command] : m_bindings)
 		{
-			ProcessBinding(binding, command.get());
+			InputContext context;
+			bool triggered{true};
+			for (auto& binding : bindings) 
+			{
+				if (!IsBindingTriggered(binding, context))
+				{
+					triggered = false;
+					break;
+				}
+
+			}
+			if (triggered) 
+			{
+				command->Execute(context);
+			}
 		}
 		return true;
 	}
 
-	void InputManagerImpl::ProcessBinding(const InputBinding& binding, IInputCommand* command)
+	bool InputManagerImpl::IsBindingTriggered(const InputBinding& binding, InputContext& context)
 	{
 		IInputDevice* device = GetDevice(binding.deviceType, binding.deviceIndex);
 
-		if (!device) return;
+		if (!device) return false;
 
 		switch (binding.deviceValue) {
-		case InputValueType::Boolean:
-		{
-			bool triggered{ false };
+			case InputValueType::Boolean:
+			{
+				bool triggered{ false };
 
-			switch (binding.trigger) {
-			case InputTriggerType::Held:
-				triggered = device->GetButtonHeld(binding.code);
-				break;
-			case InputTriggerType::Pressed:
-				triggered = device->GetButtonPressed(binding.code);
-				break;
-			case InputTriggerType::Released:
-				triggered = device->GetButtonReleased(binding.code);
-				break;
+				switch (binding.trigger) {
+				case InputTriggerType::Held:
+					triggered = device->GetButtonHeld(binding.code);
+					break;
+				case InputTriggerType::Pressed:
+					triggered = device->GetButtonPressed(binding.code);
+					break;
+				case InputTriggerType::Released:
+					triggered = device->GetButtonReleased(binding.code);
+					break;
+				}
+				if (triggered) {
+					context = { .binding = binding, .value = true };
+					return true;
+				}
 			}
-			if (triggered) {
-				command->Execute(InputContext{.binding = binding,.value = true });
-			}
-		}
-		break;
-		case InputValueType::Float:
-		{
-			float value = device->GetAxis1D(binding.code);
-			if (value != 0)
+			break;
+			case InputValueType::Float:
 			{
-				command->Execute(InputContext{ .binding = binding,.value = value });
+				float value = device->GetAxis1D(binding.code);
+				if (value != 0)
+				{
+					context = {.binding = binding, .value = value};
+					return true;
+				}
 			}
-		}
-		break;
-		case InputValueType::Vector2:
-		{
-			Vector2 value = device->GetAxis2D(binding.code);
-			if (value.SqrMagnitude() > 0.01f)
+			break;
+			case InputValueType::Vector2:
 			{
-				command->Execute(InputContext{ .binding = binding,.value = value });
+				Vector2 value = device->GetAxis2D(binding.code);
+				if (value.SqrMagnitude() > 0.1f)
+				{
+					context = { .binding = binding, .value = value };
+					return true;
+				}
 			}
+			break;
 		}
-		break;
-		}
+		return false;
 	}
 
 	IInputDevice* dae::InputManagerImpl::GetDevice(InputType deviceType, uint32_t deviceIndex) const
@@ -160,25 +176,46 @@ bool dae::InputManager::ProcessInput()
 	return m_pImpl->ProcessInput();
 }
 
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputBinding binding)
+void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, std::initializer_list<InputBinding> bindings)
 {
-	return m_pImpl->BindCommand(std::move(command), binding);
+	return m_pImpl->BindCommand(std::move(command), bindings);
 }
 
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command,  InputValueType valueType, InputType inputType, uint32_t deviceId , uint32_t code, InputTriggerType triggerType)
+
+void dae::InputManager::BindCommand(
+	std::unique_ptr<IInputCommand> command,
+	InputValueType valueType, 
+	InputType inputType, 
+	uint32_t deviceId,
+	uint32_t code, 
+	InputTriggerType triggerType)
 {
 	InputBinding binding{ .code = code, .deviceIndex = deviceId,.deviceType = inputType, .deviceValue = valueType , .trigger = triggerType };
-	return BindCommand(std::move(command), binding);
+	return BindCommand(std::move(command), {binding});
 }
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, uint32_t deviceId, GamepadInput code, InputTriggerType triggerType)
+
+void dae::InputManager::BindCommand(
+	std::unique_ptr<IInputCommand> command, 
+	InputValueType valueType, 
+	uint32_t deviceId, 
+	GamepadInput code, 
+	InputTriggerType triggerType)
 {
-	BindCommand(std::move(command),   valueType, InputType::Gamepad, deviceId, uint32_t(code), triggerType);
+	BindCommand(std::move(command),  valueType, InputType::Gamepad, deviceId, uint32_t(code), triggerType);
 }
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, KeyboardInput code, InputTriggerType triggerType)
+void dae::InputManager::BindCommand(
+	std::unique_ptr<IInputCommand> command,
+	InputValueType valueType, 
+	KeyboardInput code, 
+	InputTriggerType triggerType)
 {
 	BindCommand(std::move(command),   valueType, InputType::Keyboard, 0, uint32_t(code), triggerType);
 }
-void dae::InputManager::BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, MouseInput code, InputTriggerType triggerType)
+void dae::InputManager::BindCommand(
+	std::unique_ptr<IInputCommand> command,
+	InputValueType valueType, 
+	MouseInput code,
+	InputTriggerType triggerType)
 {
 	BindCommand(std::move(command),  valueType, InputType::Mouse, 0, uint32_t(code), triggerType);
 }

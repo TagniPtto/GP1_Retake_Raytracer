@@ -30,7 +30,6 @@ namespace dae
 		InputValueType deviceValue;
 		InputTriggerType trigger;
 	};
-
 	struct InputContext
 	{
 		InputBinding binding;
@@ -58,17 +57,22 @@ namespace dae
 
 	enum class MouseInput : uint32_t
 	{
-		LeftButton,
-		RightButton,
-		MiddleButton,
-		Button4,
-		Button5,
+		LeftButton = 1,
+		RightButton = 2 ,
+		MiddleButton = 3,
+		Button4 = 4,
+		Button5 = 5,
 
 		WheelUp,
 		WheelDown,
+		
+		MouseX,
+		MouseY,
+		Mouse,
 
 		MoveX,
-		MoveY
+		MoveY,
+		Move
 	};
 
 	enum class KeyboardInput : uint32_t

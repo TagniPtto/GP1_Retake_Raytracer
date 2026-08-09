@@ -2,6 +2,7 @@
 
 
 #include <SDL_keyboard.h>
+#include <iostream>
 
 dae::Keyboard::Keyboard()
 {
@@ -13,6 +14,7 @@ void dae::Keyboard::ProcessInput()
 	m_previousState = m_currentState;
 	const Uint8* kbState = SDL_GetKeyboardState(nullptr);
 	memcpy(m_currentState.data(), kbState, SDL_NUM_SCANCODES * sizeof(uint8_t));
+
 }
 
 bool dae::Keyboard::GetButtonHeld(uint32_t code) const
@@ -30,9 +32,9 @@ bool dae::Keyboard::GetButtonPressed(uint32_t code) const
 	return m_currentState[uint8_t(code)] && !m_previousState[uint8_t(code)];
 }
 
-float dae::Keyboard::GetAxis1D(uint32_t) const
+float dae::Keyboard::GetAxis1D(uint32_t code) const
 {
-	return 0.0f;
+	return (float)m_currentState[uint8_t(code)];
 }
 
 dae::Vector2 dae::Keyboard::GetAxis2D(uint32_t) const

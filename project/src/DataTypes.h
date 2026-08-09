@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <vector>
 #include "MathUtils/Math.h"
+#include "MathUtils/Vector3.h"
+
 
 namespace dae
 {
@@ -85,7 +87,62 @@ namespace dae
 
 		std::vector<Vector3> transformedPositions{};
 		std::vector<Vector3> transformedNormals{};
+		Vector3 boundingBox_AABB_Min{};
+		Vector3 boundingBox_AABB_Max{};
 
+		Vector3 transformedBoundingBox_AABB_Min{};
+		Vector3 transformedBoundingBox_AABB_Max{};
+
+		void UpdateAABB() {
+			if (positions.size() < 1)return;
+			Vector3 min{ positions[0] };
+			Vector3 max{ positions[0] };
+
+			for (int i{}; i < positions.size(); i++) {
+				min = Vector3::Min(min, positions[i]);
+				max = Vector3::Max(max, positions[i]);
+			}
+			boundingBox_AABB_Max = max;
+			boundingBox_AABB_Min = min;
+		}
+		void UpdateTransformedAABB(const Matrix& finalTransform) {
+			Vector3 tMaxAAB = finalTransform.TransformPoint(boundingBox_AABB_Min);
+			Vector3 tMinAAB = tMaxAAB;
+
+
+			Vector3 tAABB{ finalTransform.TransformPoint(boundingBox_AABB_Max.x,boundingBox_AABB_Min.y,boundingBox_AABB_Min.z) };
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Max.x, boundingBox_AABB_Min.y, boundingBox_AABB_Max.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Min.x, boundingBox_AABB_Min.y, boundingBox_AABB_Max.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Min.x, boundingBox_AABB_Max.y, boundingBox_AABB_Min.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Max.x, boundingBox_AABB_Max.y, boundingBox_AABB_Min.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Max.x, boundingBox_AABB_Max.y, boundingBox_AABB_Max.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+			tAABB = finalTransform.TransformPoint(boundingBox_AABB_Min.x, boundingBox_AABB_Max.y, boundingBox_AABB_Max.z);
+			tMinAAB = Vector3::Min(tMinAAB, tAABB);
+			tMaxAAB = Vector3::Max(tMaxAAB, tAABB);
+
+			transformedBoundingBox_AABB_Max = tMaxAAB;
+			transformedBoundingBox_AABB_Min = tMinAAB;
+		}
 		void Translate(const Vector3& translation)
 		{
 			translationTransform = Matrix::CreateTranslation(translation);
@@ -122,20 +179,29 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			throw std::runtime_error("Not Implemented Yet");
+			for (int i{ 0 }; i < indices.size(); i += 3) {
+				const Vector3& v0{ positions[indices[i + 0]] };
+				const Vector3& v1{ positions[indices[i + 1]] };
+				const Vector3& v2{ positions[indices[i + 2]] };
+				Vector3 normal{ Vector3::Cross(v2 - v0,v1 - v0).Normalized() };
+				normals.emplace_back(normal);
+			}
+
 		}
 
 		void UpdateTransforms()
 		{
-			throw std::runtime_error("Not Implemented Yet");
-			//Calculate Final Transform 
-			//const auto finalTransform = ...
+			Matrix transform{ translationTransform * rotationTransform * scaleTransform };
 
-			//Transform Positions (positions > transformedPositions)
-			//...
-
-			//Transform Normals (normals > transformedNormals)
-			//...
+			transformedPositions.clear();
+			transformedNormals.clear();
+			for (int i{}; i < positions.size(); i++) {
+				transformedPositions.emplace_back(transform.TransformPoint(positions[i]));
+			}
+			for (int i{}; i < normals.size(); i++) {
+				transformedNormals.emplace_back(transform.TransformVector(normals[i]));
+			}
+			UpdateTransformedAABB(transform);
 		}
 	};
 #pragma endregion

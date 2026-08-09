@@ -7,6 +7,31 @@ namespace dae
 {
 	namespace GeometryUtils
 	{
+#pragma region AABB
+		inline bool SlabTest(const TriangleMesh& mesh, const Ray& ray) {
+
+			float t0x = (mesh.transformedBoundingBox_AABB_Max.x - ray.origin.x) / ray.direction.x;
+			float t1x = (mesh.transformedBoundingBox_AABB_Min.x - ray.origin.x) / ray.direction.x;
+
+			float t0y = (mesh.transformedBoundingBox_AABB_Max.y - ray.origin.y) / ray.direction.y;
+			float t1y = (mesh.transformedBoundingBox_AABB_Min.y - ray.origin.y) / ray.direction.y;
+
+			float t0z = (mesh.transformedBoundingBox_AABB_Max.z - ray.origin.z) / ray.direction.z;
+			float t1z = (mesh.transformedBoundingBox_AABB_Min.z - ray.origin.z) / ray.direction.z;
+
+			float tmin{ std::min(t0x, t1x) };
+			float tmax{ std::max(t0x, t1x) };
+
+			tmin = std::max(tmin, std::min(t0y, t1y));
+			tmax = std::min(tmax, std::max(t0y, t1y));
+
+			tmin = std::max(tmin, std::min(t0z, t1z));
+			tmax = std::min(tmax, std::max(t0z, t1z));
+
+			return tmax > 0 and tmax >= tmin;
+		}
+
+#pragma endregion
 #pragma region Sphere HitTest
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
@@ -169,9 +194,7 @@ namespace dae
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
-			//todo W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			return light.color * light.intensity / Vector3{ target,light.origin }.SqrMagnitude();
 		}
 	}
 

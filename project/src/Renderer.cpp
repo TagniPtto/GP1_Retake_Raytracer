@@ -46,7 +46,8 @@ void Renderer::Render(Scene* pScene) const
 			Vector2 normalizedDeciceCoordinate{ 2 * (px + 0.5f) / m_Width - 1.0f, 1 - 2 * (py + 0.5f) / m_Height };
 			
 
-			for (int i{}; i < camera.samplesPerPixel; ++i) {
+			for (int i{}; i < camera.samplesPerPixel; ++i) 
+			{
 				
 				auto sampleCoord = normalizedDeciceCoordinate + Vector2{ random_float(-0.5f,0.5f) / m_Width,random_float(-0.5f,0.5f) / m_Height};
 				sampleCoord.x *= aspectRatio;
@@ -83,14 +84,37 @@ ColorRGB dae::Renderer::ShadePixel(Scene* pScene, Ray ray) const
 	ColorRGB outColor{ };
 	HitRecord hit;
 	pScene->GetClosestHit(ray, hit);
+
+
+	constexpr float shadowPercentage{ 0.5f };
 	if (hit.didHit)
 	{
-		outColor = 0.5f * ColorRGB(hit.normal.x + 1.0f, hit.normal.y + 1.0f, hit.normal.z + 1.0f);//materials[hit.materialIndex]->Shade();
+		for (const auto& l : lights) 
+		{
+			float shadow{ 1.0f };
+			const Vector3 ligthDirection = dae::LightUtils::GetDirectionToLight(l, hit.origin);
+			if (m_options.renderShadows) {
+				const auto lightRay = Ray{ hit.origin + hit.normal * 0.01f,ligthDirection };
+				if (pScene->DoesHit(lightRay)) {
+					shadow *= shadowPercentage;
+				}
+			}
+
+			const ColorRGB radiance = dae::LightUtils::GetRadiance(l, hit.origin);
+			const float coslambert = Clamp(Vector3::Dot(hit.normal, ligthDirection), 0.0f, 1.0f);
+			const ColorRGB brdfResult = materials[hit.materialIndex]->Shade(hit,ligthDirection, ray.direction);
+			const ColorRGB lightContribution = radiance * brdfResult * coslambert * shadow;
+			outColor += lightContribution;
+
+		}	
 	}
-	else {
+	else
+	{
+		//background
 		float a = 0.5f * (ray.direction.y + 1.0f);
 		outColor = (1.0f - a) * ColorRGB(1.0f,1.0f,1.0f) + a * ColorRGB(0.5f, 0.7f, 1.0f);
 	}
+
 	return outColor;
 }
 

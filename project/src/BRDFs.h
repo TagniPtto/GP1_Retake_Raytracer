@@ -12,16 +12,12 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			return cd * kd/PI;
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			return cd* kd / PI;
 		}
 
 		/**
@@ -35,9 +31,10 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			//todo: W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			const auto reflectionVector = -l-2*Vector3::Dot(l,n) * n;
+			const auto cosAlha = Vector3::Dot(reflectionVector,v);
+			const auto phong = ks * powf(cosAlha,exp);
+			return ColorRGB(phong, phong, phong);
 		}
 
 		/**

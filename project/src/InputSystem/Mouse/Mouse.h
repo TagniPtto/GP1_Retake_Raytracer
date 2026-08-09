@@ -14,6 +14,8 @@ namespace dae
 		Mouse() = default;
 		int m_x{};
 		int m_y{};
+		int m_deltaX{};
+		int m_deltaY{};
 		Uint32 m_currentButtonState{};
 		Uint32 m_previousButtonState{};
 

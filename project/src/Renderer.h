@@ -11,6 +11,11 @@ struct SDL_Surface;
 namespace dae
 {
 	class Scene;
+
+	struct RendererOptions {
+		bool renderShadows{ true };
+		int renderView{};
+	};
 	class Renderer final
 	{
 	public:
@@ -35,5 +40,7 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+
+		RendererOptions m_options;
 	};
 }

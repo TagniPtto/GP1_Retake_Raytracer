@@ -46,8 +46,16 @@ namespace dae {
 
 	bool Scene::DoesHit(const Ray& ray) const
 	{
-		//todo W2
-		throw std::runtime_error("Not Implemented Yet");
+		for (auto& sphere : m_SphereGeometries) {
+			if (GeometryUtils::HitTest_Sphere(sphere, ray)) {
+				return true;
+			}
+		}
+		for (auto& plane : m_PlaneGeometries) {
+			if (GeometryUtils::HitTest_Plane(plane, ray)) {
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -173,4 +181,49 @@ namespace dae {
 	}
 	void Scene_W3::Initialize()
 	{}
+	void Scene_W3_TestScene::Initialize()
+	{
+		m_Camera.origin = { 0.f, 1.f, -5.f };
+		m_Camera.fovAngle = 45.f;
+
+		// Materials
+		//const auto matLambert_Red = AddMaterial(
+		//	new Material_LambertPhong(colors::Red,1.0f,1.0f, 60.f));
+		const auto matLambert_Red = AddMaterial(
+			new Material_Lambert(colors::Red,1.0f));
+
+		const auto matLambert_Blue = AddMaterial(
+			new Material_Lambert(colors::Blue, 1.f));
+
+		const auto matLambert_Yellow = AddMaterial(
+			new Material_Lambert(colors::Yellow, 1.f));
+
+		// Spheres
+		AddSphere(
+			{ -0.75f, 1.f, 0.f },
+			1.f,
+			matLambert_Red);
+
+		AddSphere(
+			{ 0.75f, 1.f, 0.f },
+			1.f,
+			matLambert_Blue);
+
+		// Plane
+		AddPlane(
+			{ 0.f, 0.f, 0.f },
+			{ 0.f, 1.f, 0.f },
+			matLambert_Yellow);
+
+		// Light
+		AddPointLight(
+			{ 0.f, 5.f, 5.f },
+			50.f,
+			colors::Blue);
+
+		AddPointLight(
+			{ 0.f, 2.5f, -5.f },
+			50.f,
+			colors::Red);
+	}
 }

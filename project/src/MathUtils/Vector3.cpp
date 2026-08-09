@@ -16,6 +16,22 @@ namespace dae {
 	Vector3::Vector3(const Vector4& v) : x(v.x), y(v.y), z(v.z) {}
 
 	Vector3::Vector3(const Vector3& from, const Vector3& to) : x(to.x - from.x), y(to.y - from.y), z(to.z - from.z) {}
+	
+	Vector3 Vector3::Max(const Vector3& v1, const Vector3& v2)
+	{
+		return Vector3(
+			std::max(v1.x, v2.x),
+			std::max(v1.y, v2.y),
+			std::max(v1.z, v2.z));
+	}
+
+	Vector3 Vector3::Min(const Vector3& v1, const Vector3& v2)
+	{
+		return Vector3(
+			std::min(v1.x, v2.x),
+			std::min(v1.y, v2.y),
+			std::min(v1.z, v2.z));
+	}
 
 	float Vector3::Magnitude() const
 	{

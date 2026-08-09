@@ -39,7 +39,7 @@ namespace dae
 		const std::vector<Plane>& GetPlaneGeometries() const { return m_PlaneGeometries; }
 		const std::vector<Sphere>& GetSphereGeometries() const { return m_SphereGeometries; }
 		const std::vector<Light>& GetLights() const { return m_Lights; }
-		const std::vector<Material*> GetMaterials() const { return m_Materials; }
+		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 
 	protected:
 		std::string	sceneName;
@@ -105,6 +105,20 @@ namespace dae
 		Scene_W3(Scene_W3&&) noexcept = delete;
 		Scene_W3& operator=(const Scene_W3&) = delete;
 		Scene_W3& operator=(Scene_W3&&) noexcept = delete;
+
+		void Initialize() override;
+	};
+	class Scene_W3_TestScene final : public Scene
+	{
+
+	public:
+		Scene_W3_TestScene() = default;
+		~Scene_W3_TestScene() override = default;
+
+		Scene_W3_TestScene(const Scene_W3_TestScene&) = delete;
+		Scene_W3_TestScene(Scene_W3_TestScene&&) noexcept = delete;
+		Scene_W3_TestScene& operator=(const Scene_W3_TestScene&) = delete;
+		Scene_W3_TestScene& operator=(Scene_W3_TestScene&&) noexcept = delete;
 
 		void Initialize() override;
 	};

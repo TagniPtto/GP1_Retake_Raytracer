@@ -23,12 +23,12 @@ namespace dae
 
 		bool ProcessInput();
 
-		void BindCommand(std::unique_ptr<IInputCommand> command, InputBinding binding);
+		void BindCommand(std::unique_ptr<IInputCommand> command, std::initializer_list<InputBinding> bindings);
 		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, InputType inputType, uint32_t deviceId, uint32_t code, InputTriggerType triggerType);
 		
-		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, uint32_t deviceId,GamepadInput code, InputTriggerType triggerType);
-		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, KeyboardInput code, InputTriggerType triggerType);
-		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, MouseInput code, InputTriggerType triggerType);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, uint32_t deviceId,GamepadInput code,		InputTriggerType triggerType = InputTriggerType::Held);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, KeyboardInput code,						InputTriggerType triggerType = InputTriggerType::Held);
+		void BindCommand(std::unique_ptr<IInputCommand> command, InputValueType valueType, MouseInput code,							InputTriggerType triggerType = InputTriggerType::Held);
 
 	private:
 		std::unique_ptr<InputManagerImpl> m_pImpl;
