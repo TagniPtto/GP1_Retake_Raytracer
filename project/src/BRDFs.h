@@ -31,8 +31,8 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			const auto reflectionVector = -l-2*Vector3::Dot(l,n) * n;
-			const auto cosAlha = Vector3::Dot(reflectionVector,v);
+			const auto reflectionVector = -l-2*Vector3::Dot(-l,n) * n;
+			const auto cosAlha = Vector3::Dot(reflectionVector,-v);
 			const auto phong = ks * powf(cosAlha,exp);
 			return ColorRGB(phong, phong, phong);
 		}

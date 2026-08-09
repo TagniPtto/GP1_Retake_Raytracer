@@ -81,7 +81,7 @@ namespace dae
 			const auto lambert = BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor);
 			const auto phong = BRDF::Phong(m_SpecularReflectance, m_PhongExponent,l,v,hitRecord.normal);
 
-			return lambert ;
+			return lambert  + phong;
 		}
 
 	private:

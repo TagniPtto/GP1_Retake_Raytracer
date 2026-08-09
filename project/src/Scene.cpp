@@ -187,10 +187,10 @@ namespace dae {
 		m_Camera.fovAngle = 45.f;
 
 		// Materials
-		//const auto matLambert_Red = AddMaterial(
-		//	new Material_LambertPhong(colors::Red,1.0f,1.0f, 60.f));
 		const auto matLambert_Red = AddMaterial(
-			new Material_Lambert(colors::Red,1.0f));
+			new Material_LambertPhong(colors::Red,1.0f,1.0f, 60.f));
+		//const auto matLambert_Red = AddMaterial(
+		//	new Material_Lambert(colors::Red,1.0f));
 
 		const auto matLambert_Blue = AddMaterial(
 			new Material_Lambert(colors::Blue, 1.f));
@@ -219,11 +219,11 @@ namespace dae {
 		AddPointLight(
 			{ 0.f, 5.f, 5.f },
 			50.f,
-			colors::Blue);
+			colors::White);
 
 		AddPointLight(
 			{ 0.f, 2.5f, -5.f },
 			50.f,
-			colors::Red);
+			colors::White);
 	}
 }
