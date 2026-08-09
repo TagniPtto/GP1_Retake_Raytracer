@@ -86,7 +86,8 @@ namespace dae
 			}
 			float numerator = Vector3::Dot(plane.origin - ray.origin, plane.normal);
 			float t = numerator / denominator;
-			if (t > 0)
+
+			if (t > 0 && (ray.min < t && t < ray.max))
 			{
 				if (!ignoreHitRecord)
 				{

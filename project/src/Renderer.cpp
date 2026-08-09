@@ -80,7 +80,6 @@ ColorRGB dae::Renderer::ShadePixel(Scene* pScene, Ray ray) const
 	auto& lights = pScene->GetLights();
 
 
-
 	ColorRGB outColor{ };
 	HitRecord hit;
 	pScene->GetClosestHit(ray, hit);
@@ -89,23 +88,24 @@ ColorRGB dae::Renderer::ShadePixel(Scene* pScene, Ray ray) const
 	constexpr float shadowPercentage{ 0.5f };
 	if (hit.didHit)
 	{
-		for (const auto& l : lights) 
+		for (const auto& l : lights)
 		{
 			float shadow{ 1.0f };
 			const Vector3 ligthDirection = dae::LightUtils::GetDirectionToLight(l, hit.origin);
-			if (m_options.renderShadows) {
-				const auto lightRay = Ray{ hit.origin + hit.normal * 0.01f,ligthDirection };
-				if (pScene->DoesHit(lightRay)) {
+			if (m_options.renderShadows)
+			{
+				const auto shadowRay = Ray{ hit.origin + hit.normal * 0.01f,ligthDirection ,0.01f , (l.origin - hit.origin).Magnitude()};
+				if (pScene->DoesHit(shadowRay))
+				{
 					shadow *= shadowPercentage;
 				}
 			}
 
-			const ColorRGB radiance = dae::LightUtils::GetRadiance(l, hit.origin);
 			const float coslambert = Clamp(Vector3::Dot(hit.normal, ligthDirection), 0.0f, 1.0f);
-			const ColorRGB brdfResult = materials[hit.materialIndex]->Shade(hit,ligthDirection, ray.direction);
-			const ColorRGB lightContribution = radiance * brdfResult * coslambert * shadow;
+			const ColorRGB radiance = dae::LightUtils::GetRadiance(l, hit.origin);
+			const ColorRGB brdfResult = materials[hit.materialIndex]->Shade(hit, ligthDirection, ray.direction);
+			ColorRGB lightContribution = radiance * brdfResult * coslambert * shadow;
 			outColor += lightContribution;
-
 		}	
 	}
 	else

@@ -122,4 +122,18 @@ namespace dae
 
 		void Initialize() override;
 	};
+	class Scene_W3_CookTorrance final : public Scene
+	{
+
+	public:
+		Scene_W3_CookTorrance() = default;
+		~Scene_W3_CookTorrance() override = default;
+
+		Scene_W3_CookTorrance(const Scene_W3_CookTorrance&) = delete;
+		Scene_W3_CookTorrance(Scene_W3_CookTorrance&&) noexcept = delete;
+		Scene_W3_CookTorrance& operator=(const Scene_W3_CookTorrance&) = delete;
+		Scene_W3_CookTorrance& operator=(Scene_W3_CookTorrance&&) noexcept = delete;
+
+		void Initialize() override;
+	};
 }

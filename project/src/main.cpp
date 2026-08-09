@@ -52,7 +52,7 @@ int main(int argc, char* args[])
 	//Initialize "framework"
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W3_TestScene();
+	const auto pScene = new Scene_W3_CookTorrance();
 	pScene->Initialize();
 
 	//Start loop

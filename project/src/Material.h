@@ -102,9 +102,33 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			const Vector3 viewDir = -v;
+
+			const Vector3 halfVector = (viewDir + l).Normalized();
+			const float NdotV = Clamp(Vector3::Dot(hitRecord.normal, viewDir), 0.0f, 1.0f);
+			const float NdotL = Clamp(Vector3::Dot(hitRecord.normal, l), 0.0f, 1.0f);
+
+			if (NdotV <= 0.0f || NdotL <= 0.0f)
+				return {};
+
+			const ColorRGB dielectricF0{ 0.04f, 0.04f, 0.04f };
+
+			const ColorRGB f0 = dielectricF0 * (1.0f - m_Metalness) + m_Albedo * m_Metalness;
+
+			const ColorRGB F{ BRDF::FresnelFunction_Schlick(halfVector,-v,f0) };
+			const float D{ BRDF::NormalDistribution_GGX(hitRecord.normal,halfVector,m_Roughness) };
+			const float G{ BRDF::GeometryFunction_Smith(hitRecord.normal,-v,l,m_Roughness) };
+
+			const ColorRGB specular{ G * D * F / (4 * Vector3::Dot(-v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal)) };
+
+			ColorRGB kd{ ColorRGB{1.0f,1.0f,1.0f} - F };
+			if (m_Metalness > 0.999f)
+			{
+				kd = {};
+			}
+			const ColorRGB lambert{ kd * BRDF::Lambert(kd,m_Albedo) };
+
+			return lambert + specular;
 		}
 
 	private:
